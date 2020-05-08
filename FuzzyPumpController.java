@@ -1,10 +1,6 @@
 import java.util.*;
-
 import processing.core.*;
-
 import processing.core.PApplet;
-
-
 import com.fuzzylite.*;
 import com.fuzzylite.defuzzifier.*;
 import com.fuzzylite.norm.s.*;
@@ -16,10 +12,8 @@ import com.fuzzylite.variable.*;
 
 public class FuzzyPumpController extends PApplet {
 
-
-	// Max and Min tank levels
-    private final int MAX = 70;
-    private final int MIN = 40;
+    private final int MAX = 70;     // Maximum level of Tank.
+    private final int MIN = 40;     // Minimum value of Tank.
 
     // For check buttons
     private boolean pumpOver = false;
@@ -29,20 +23,16 @@ public class FuzzyPumpController extends PApplet {
     // Toggle external disturbances
     private boolean pumpOn = false;
     private boolean rainOn = false;
-    private boolean demandOn = false;
+    private boolean demandOn= false;
 
     // Step vars to control perlin noise
     private float t1 = (float) 3;
     private float t2 = (float) 3;
 
-    // Currrent level in the tank
-    private float level;
-    // Level of demand from outlet (-/+)
-    private float demand;
-    // Level of rain water filing tank
-    private float rain;
-    // Pump action (-/+)
-    private float pumpAction;
+    private float level;           // Currrent level in the tank
+    private float demand;          // Level of demand from outlet (-/+)
+    private float rain;            // Level of rain water filing tank
+    private float pumpAction;     // Pump action (-/+)
 
     // Setup some colours
     private int blue = color(85,145,232);
@@ -54,9 +44,9 @@ public class FuzzyPumpController extends PApplet {
 
     // Define our FuzzyLite objects
     private Engine engine;
-    private InputVariable inputVariable1;
-    private InputVariable inputVariable2;
-    private OutputVariable outputVariable;
+    private InputVariable inputVariable1;   //level
+    private InputVariable inputVariable2;   //demand
+    private OutputVariable outputVariable;  //command
     private RuleBlock ruleBlock;
 
     public void settings(){
@@ -66,24 +56,22 @@ public class FuzzyPumpController extends PApplet {
     public void setup(){
     	
         Random ran = new Random();
-        level = ran.nextInt(80)+10;
+        level = ran.nextInt(80)+10;         //Initially random value is set for level.
         demand = 0;
         pumpAction = 0;
         rain = 0;
 
-        // TODO: Create the engine
+        // Create the engine for Fuzzy Pump Controller
         engine = new Engine();
-        engine.setName("FuzzyPumpController");
+        engine.setName("Fuzzy Pump Controller");
 
-        // TODO: Setup the level input variable
-        // Setup the level linguistic variable
+        //Setup the level input variable.
         inputVariable1 = new InputVariable();
         inputVariable1.setEnabled(true);
         inputVariable1.setName("level");
         inputVariable1.setRange(0, 100);
 
-        // TODO: create the appropriate terms for inputVariable1 	
-        // Add each term for the Linguistic variable
+        // Create the appropriate terms for level.(membership function).
         // Water level term setup
         inputVariable1.addTerm(new Trapezoid("vlow", 0, 10, 20, 30));
         inputVariable1.addTerm(new Trapezoid("low", 20, 30, 40, 50));
@@ -94,15 +82,14 @@ public class FuzzyPumpController extends PApplet {
         // Add the variable to the fuzzy engine
         engine.addInputVariable(inputVariable1);
 
-        // TODO: Setup the demand input variable
-        // Setup the demand linguistic variable
+        //Setup the demand input variable
         inputVariable2 = new InputVariable();
         inputVariable2.setEnabled(true);
         inputVariable2.setName("demand");
         inputVariable2.setRange(-1.0, 1.50);
         
-        // TODO: create the appropriate terms for inputVariable2 	
-        // Add each term for the Linguistic variable
+        //Create the appropriate terms for demand.	
+        //Water Demand Setup.
         inputVariable2.addTerm(new Triangle("vlow", -1.0, -0.75, -0.50));
         inputVariable2.addTerm(new Trapezoid("low", -0.75, -0.50, -0.25, 0));
         inputVariable2.addTerm(new Trapezoid("good", -0.25, 0, 0.25, 0.50));
@@ -112,31 +99,30 @@ public class FuzzyPumpController extends PApplet {
         // Add the variable to the fuzzy engine
         engine.addInputVariable(inputVariable2);
         
-        
-        // TODO: Setup the output command variable
-        // Setup the output command variable
+        //Setup the output command variable
         outputVariable = new OutputVariable();
         outputVariable.setEnabled(true);
         outputVariable.setName("command");
         outputVariable.setRange(-1.00, 1.00);
-        // How should the rules be accumulated
+
         outputVariable.fuzzyOutput().setAccumulation(new Maximum());
-        // How will the output be Defuzzified?
+
+        //Defuzzification Of Output.
         outputVariable.setDefuzzifier(new Centroid(100));
         outputVariable.setLockValidOutput(false);
         outputVariable.setLockOutputRange(false);
-        // Add each term for the Linguistic variable
-        // TODO: create the appropriate terms for outputVariable - see lab sheet
+
+        // Add membership function for the Linguistic variable
         outputVariable.addTerm(new Trapezoid("vlow", -1.0, -0.75, -0.50, -0.25));
         outputVariable.addTerm(new Triangle("low", -0.50, -0.25, 0));
         outputVariable.addTerm(new Triangle("good", -0.25, 0, 0.25));
         outputVariable.addTerm(new Triangle("high", 0, 0.25, 0.5));
         outputVariable.addTerm(new Trapezoid("vhigh", 0.25, 0.50, 0.75, 1.00));
+
         // Add the variable to the fuzzy engine
         engine.addOutputVariable(outputVariable);
         
         
-        // TODO: Setup the inference rules
         // Setup the inference rules
         ruleBlock = new RuleBlock();
         ruleBlock.setEnabled(true);
@@ -152,22 +138,18 @@ public class FuzzyPumpController extends PApplet {
         ruleBlock.addRule(Rule.parse("if (level is vlow or level is low) then command is vhigh", engine));
         ruleBlock.addRule(Rule.parse("if (level is good) then command is good", engine));
         ruleBlock.addRule(Rule.parse("if (level is high or level is vhigh) then command is vlow", engine));
-
         ruleBlock.addRule(Rule.parse("if (level is good and demand is vlow) then command is vlow", engine));
         ruleBlock.addRule(Rule.parse("if (level is good and demand is low) then command is low", engine));
         ruleBlock.addRule(Rule.parse("if (level is good and demand is good) then command is good", engine));
         ruleBlock.addRule(Rule.parse("if (level is good and demand is high) then command is high", engine));
-        ruleBlock.addRule(Rule.parse("if (level is good and demand is vhigh) then command is vhigh", engine));
-        
+        ruleBlock.addRule(Rule.parse("if (level is good and demand is vhigh) then command is vhigh", engine)); 
         ruleBlock.addRule(Rule.parse("if (level is vlow and demand is vlow) then command is good", engine));
         ruleBlock.addRule(Rule.parse("if (level is low and demand is low) then command is good", engine));
         ruleBlock.addRule(Rule.parse("if (level is high and demand is high) then command is good", engine));
-
         ruleBlock.addRule(Rule.parse("if (level is vlow and demand is vhigh) then command is vhigh", engine));
         ruleBlock.addRule(Rule.parse("if (level is low and demand is vhigh) then command is high", engine));
         ruleBlock.addRule(Rule.parse("if (level is high and demand is vhigh) then command is low", engine));
         ruleBlock.addRule(Rule.parse("if (level is vhigh and demand is vhigh) then command is vlow", engine));
-
         
         // Add the rule block to the fuzzy engine
         engine.addRuleBlock(ruleBlock);
@@ -182,53 +164,44 @@ public class FuzzyPumpController extends PApplet {
         text("CRITICAL LEVEL",200,100);
     }
     private void drawPipes(){
-        // Set the stroke color
-        stroke(0);
-        // Draw the inlet pipe
-        line(100,290,500,290);
+        
+        stroke(0);                  // Set the stroke color
+        line(100,290,500,290);      // Draw the inlet pipe
         line(100,300,500,300);
-        // Draw the outlet pipe
-        line(600,290,750,290);
+        line(600,290,750,290);      // Draw the outlet pipe
         line(600,300,750,300);
         noStroke();
-        // Fill the input pipe
-        fill(blue);
+        fill(blue);                 // Fill the input pipe
         rect(100,291,400,9);
-        // Fill the output pipe
-        rect(601,291,150,9);
+        rect(601,291,150,9);        // Fill the output pipe
     }
     private void drawPump(){
-        // Draw the pump
-        fill(grey);
+        fill(grey);                 // Draw the pump
         rect(255,275,40,40);
     }
     private void drawTank(){
-        // Draw the tank
-        stroke(0);
+        stroke(0);                  // Draw the tank
         line(500,300,500,200);
         line(600,300,600,200);
         line(500,300,600,300);
     }
     private void drawWaterLevel(float lev){
-        // No outline for the water
-        noStroke();
-        // Set the fill color
-        fill(blue);
-        // Draw the rect for the water
-        rect(501,300-lev,99,lev);
+        noStroke();                  // No outline for the water
+        fill(blue);                  // Set the fill color
+        rect(501,300-lev,99,lev);    // Draw the rect for the water
     }
     private void drawInfo(float l, float d, float p){
         // Output the water level
         fill(black);
-        text("Water level: " + l,50,50);
-        text("Demand level: " + d,50,65);
-        text("Pump: " + p,50,80);
+        text("Water level : " + l,50,50);
+        text("Demand level : " + d,50,65);
+        text("Pump Action : " + p,50,80);
         if (l > MAX || l < MIN)
             fill(red);
         else
             fill(green);
-        // Draw the warning light
-        ellipse(60,95,20,20);
+    
+        ellipse(60,95,20,20);          // Draw the warning light
         fill(white);
         if (p < 0)
             text("<<<", 261,298);
@@ -237,17 +210,18 @@ public class FuzzyPumpController extends PApplet {
     }
     private float fuzzyPumpController(float l, float d){
     	
-        // TODO: Load the input variables
+        //Load the input variables
+
         // Level
         inputVariable1.setInputValue(l);
         
         // Demand
         inputVariable2.setInputValue(d);
 
-        // TODO: Run the engine
+        // Run the engine
         engine.process();
-        
-        // TODO: Return the output -> outputVariable.defuzzify()
+
+        //Return the output -> outputVariable.defuzzify()
         return (float)(outputVariable.defuzzify());
     }
     
@@ -258,37 +232,38 @@ public class FuzzyPumpController extends PApplet {
             fill(grey);
         else
             fill(white);
+
         rect(650, 30, 15, 15);
         fill(black);
         text("Pump", 670, 42);
         stroke(black);
+
         if (rainOn)
             fill(grey);
         else
             fill(white);
+
         rect(650, 50, 15, 15);
         fill(black);
         text("Rain", 670, 62);
         stroke(black);
+
         if (demandOn)
             fill(grey);
         else
             fill(white);
+
         rect(650, 70, 15, 15);
         fill(black);
         text("Demand", 670, 83);
-
 
     }
 
     // Run the system
     public void drawSystem(){
-        // Clear the background
-        background(255);
-
-        // Update the mouse pos
-        update(mouseX, mouseY);
-
+        
+        background(255);            // Clear the background
+        update(mouseX, mouseY);     // Update the mouse pos
         drawCheckboxButtons();
 
         // Draw all the static visual components
@@ -301,32 +276,32 @@ public class FuzzyPumpController extends PApplet {
             rain = noise(t1) * 0.05f;
         else
             rain = 0;
+
         // Generate a perlin outlet demand
-        if (demandOn){
+        if (demandOn)
+        {
             demand = noise(t2);
-            // Map the demand to a value between -1 and 1.5
-            demand = map(demand,0f,1f,-1f,1.5f);
+            demand = map(demand,0f,1f,-1f,1.5f);    // Map the demand to a value between -1 and 1.5
         }
         else
             demand = 0;
 
-        // Add the rain level to the current tank level
-        level = level + rain;
-        // Apply the demand -/+ to the current level
-        level = level - demand;
+        
+        level = level + rain;           // Add the rain level to the current tank level
+        level = level - demand;         // Apply the demand -/+ to the current level
 
-        // Show the water level in the tank
-        drawWaterLevel(level);
+
+        drawWaterLevel(level);          
 
         // Run the fuzzy engine with inputs and get controller output
-        if (pumpOn == true){
+        if (pumpOn == true)
+        {
             pumpAction = fuzzyPumpController(level, demand);
-            // Apply the pump action to the current level
-            level = level + pumpAction;
+            level = level + pumpAction;         // Apply the pump action to the current level
         }
 
-        // Draw the instrumentation panel
-        drawInfo(level, demand, pumpAction);
+        drawInfo(level, demand, pumpAction);    // Draw the instrumentation panel
+
 
         // Increment time step for Perlin noise
         t1 += 0.01;
@@ -334,58 +309,57 @@ public class FuzzyPumpController extends PApplet {
     }
 
     // Draw each frame of animation
-    public void draw(){
+    public void draw()
+    {
         if (level < 0 || level > 100)
             drawGameOver();
         else
             drawSystem();
     }
-    private void update(int x, int y) {
-        if (overCheckbox(650, 30, 15, 15) ) {
+    private void update(int x, int y) 
+    {
+        if (overCheckbox(650, 30, 15, 15) ) 
+        {
             pumpOver = true;
             rainOver = false;
             demandOver = false;
         }
-        else if (overCheckbox(650, 50, 15, 15) ) {
+        else if (overCheckbox(650, 50, 15, 15) ) 
+        {
             rainOver = true;
             pumpOver = false;
             demandOver = false;
         }
-        else if (overCheckbox(650, 70, 15, 15) ) {
+        else if (overCheckbox(650, 70, 15, 15) ) 
+        {
             demandOver = true;
             pumpOver = false;
             rainOver = false;
         }
-        else {
+        else 
+        {
             pumpOver = rainOver = demandOver = false;
         }
     }
-    public void mousePressed() {
-        if (rainOver) {
-            rainOn = !rainOn;
-        }
-        if (demandOver) {
-            demandOn = !demandOn;
-        }
-        if (pumpOver){
-            pumpOn = !pumpOn;
-        }
+    public void mousePressed() 
+    {
+        if (rainOver)   rainOn = !rainOn;
+        if (demandOver) demandOn = !demandOn;
+        if (pumpOver)   pumpOn = !pumpOn;
+
     }
-    private boolean overCheckbox(int x, int y, int width, int height)  {
+    private boolean overCheckbox(int x, int y, int width, int height)  
+    {
         if (mouseX >= x && mouseX <= x+width && mouseY >= y && mouseY <= y+height)
             return true;
         else
             return false;
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args)
+    {
         String[] a = {"FuzzyPumpController"};
         PApplet.main(a);
     }
 
 }
-
-
-
-//javac -classpath .:jfuzzylite.jar:core.jar FuzzyPumpController.java
-//java -classpath .:jfuzzylite.jar:core.jar FuzzyPumpController
