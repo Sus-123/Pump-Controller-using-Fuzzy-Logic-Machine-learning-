@@ -11,3 +11,6 @@ It can control machines and consumer products.
 It may not give accurate reasoning, but acceptable reasoning.
 Fuzzy logic helps to deal with the uncertainty in engineering.
 
+![image8](https://user-images.githubusercontent.com/46710508/123592290-a980df80-d80a-11eb-88fc-da004a6a303e.png)
+
+
