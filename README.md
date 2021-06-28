@@ -14,4 +14,27 @@ The architechture of Fuzzy Algo is:
 
 ![image8](https://user-images.githubusercontent.com/46710508/123592290-a980df80-d80a-11eb-88fc-da004a6a303e.png)
 
+**To compile and run the code : **
+Setup Java environment in linux by running following commands in terminal.
+a. $ sudo apt install default - jre
+b. $ sudo apt install default - jdk
+	
+Now ,  Download three .jar files provided in the repository. (Given files can also be downloaded from the official site of fuzzylite ) .
+These jar files are necessary for importing fuzzylite libraries. 
+              (i)    core.jar
+              (ii)   jfuzzylite -src.jar
+              (iii)  jfuzzylite.jar
+       
+Place the .jar files and .java file in the same folder.
+
+In terminal cd to the folder containing jar files and code file.
+
+Run the following command in terminal to compile and run  :
+        javac -classpath .:jfuzzylite.jar:core.jar FPC.java
+        java -classpath .:jfuzzylite.jar:core.jar FPC
+        
+**OUTPUT**
+
+
+
 
