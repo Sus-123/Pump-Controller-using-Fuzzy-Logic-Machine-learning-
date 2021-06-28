@@ -14,26 +14,28 @@ The architechture of Fuzzy Algo is:
 
 ![image8](https://user-images.githubusercontent.com/46710508/123592290-a980df80-d80a-11eb-88fc-da004a6a303e.png)
 
-**To compile and run the code : **
-Setup Java environment in linux by running following commands in terminal.
-a. $ sudo apt install default - jre
-b. $ sudo apt install default - jdk
+**To compile and run the code** : 
+Setup Java environment in linux by running following commands in terminal.</br>
+a. $ sudo apt install default - jre </br>
+b. $ sudo apt install default - jdk </br>
 	
 Now ,  Download three .jar files provided in the repository. (Given files can also be downloaded from the official site of fuzzylite ) .
-These jar files are necessary for importing fuzzylite libraries. 
-              (i)    core.jar
-              (ii)   jfuzzylite -src.jar
-              (iii)  jfuzzylite.jar
+These jar files are necessary for importing fuzzylite libraries.</br> 
+              (i)    core.jar </br>
+              (ii)   jfuzzylite -src.jar </br>
+              (iii)  jfuzzylite.jar </br>
        
-Place the .jar files and .java file in the same folder.
+Place the .jar files and .java file in the same folder.</br>
 
-In terminal cd to the folder containing jar files and code file.
+In terminal cd to the folder containing jar files and code file.</br>
 
-Run the following command in terminal to compile and run  :
-        javac -classpath .:jfuzzylite.jar:core.jar FPC.java
-        java -classpath .:jfuzzylite.jar:core.jar FPC
+Run the following command in terminal to compile and run  :</br>
+        javac -classpath .:jfuzzylite.jar:core.jar FPC.java </br>
+        java -classpath .:jfuzzylite.jar:core.jar FPC </br>
         
 **OUTPUT**
+![image10](https://user-images.githubusercontent.com/46710508/123592888-79860c00-d80b-11eb-8095-4e975cdcd7f8.jpg)
+
 
 
 
